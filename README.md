@@ -1,2 +1,2 @@
-# -_R
-빅분기 독학
+# Engineer Big Data Analysis_R
+빅분기 실기 독학
