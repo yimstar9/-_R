@@ -1,0 +1,49 @@
+# This R environment comes with many helpful analytics packages installed
+# It is defined by the kaggle/rstats Docker image: https://github.com/kaggle/docker-rstats
+# For example, here's a helpful package to load
+
+library(tidyverse) # metapackage of all tidyverse packages
+
+#주어진 데이터는 각 고객이 가입한서비스와 계정 정보 
+#인구에 대한 통계 정보들이다. 주어진 훈련 데이터를 이용하여 
+#모델을 훈련한 후 테스트 데이터로 고객의 이탈 여부를 예측하 
+#고 CSV 포맷으로 제출하시오.(단, 이탈 : "Yes", 유지 : "No")
+#참고 데이터 세트
+#https://www.kaggle.com/blastchar/telco-customer-churn
+
+
+# Input data files are available in the read-only "../input/" directory
+# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory
+
+list.files(path = "../input")
+
+# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using "Save & Run All" 
+# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session
+
+library(randomForest)
+library(ModelMetrics)
+library(dplyr)
+library(caret)
+data<-read.csv("/kaggle/input/telecom-dataset/telco.csv")
+
+df<-subset(data,select=-c(customerID))
+df<-na.omit(df)
+
+df<-df%>%mutate_if(is.character, as.factor)
+
+
+# p<-preProcess(df,c("center","scale"))
+#p<-preProcess(df,c("range"))
+#df$TotalCharges<-predict(p,df)$TotalCharges
+#summary(df)
+
+idx<-sample(1:nrow(df),0.7*nrow(df))
+train<-df[idx,]
+test<-df[-idx,]
+
+m_rf<-randomForest(Churn~., train, ntree=250)
+p_rf<-predict(m_rf,subset(test,select=-c(Churn)))
+caret::confusionMatrix(p_rf,test$Churn)$overall[1]
+caret::confusionMatrix(p_rf,test$Churn)$byClass[7]
+auc(p_rf,test$Churn)
+test$Churn
